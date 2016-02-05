@@ -1,58 +1,48 @@
-import ko from 'knockout'
+import p, { addWireTap } from './p.es6'
+import f from './f.es6'
+import w from './w.es6'
 
 import patch from 'virtual-dom/patch'
 import createElement from 'virtual-dom/create-element'
 import VPatch from 'virtual-dom/vnode/vpatch'
 
-import messages from './messages.es6'
-import render from './render.es6'
+addWireTap(envelope => console.log(envelope))
 
-var state = {
-  count: 0
-}
+f.init('main')
 
-var tree = render(state)
-var rootNode = createElement(tree)
-document.body.appendChild(rootNode)
+;(() => {
+  var rootNode
 
-var renderer = new Worker('renderer.js')
-
-renderer.onerror = (err) => {
-  console.log('renderer error:', err)
-}
-
-function _loadFns (ob) {
-  for (var key in ob) {
-    if (ob[key].hasOwnProperty('fn')) {
-      ob[key] = () => renderer.postMessage(new messages.FnCall(ob[key].fn, null))
-    } else if (typeof ob[key] === 'object') {
-      _loadFns(ob[key])
+  p.subscribe({
+    topic: 'view.render',
+    callback: tree => {
+      rootNode = createElement(tree)
+      document.body.appendChild(rootNode)
     }
-  }
-}
+  })
 
-function loadFns (patches) {
-  for (var key in patches) {
-    if (key !== 'a') {
-      var patch = patches[key]
-      switch (patch.type) {
-        case VPatch.PROPS: {
-          _loadFns(patch.patch)
-        }
-        case VPatch.VNODE: {
-          _loadFns(patch.patch.properties)
-        }
-      }
+  p.subscribe({
+    topic: 'view.patch',
+    callback: patches => {
+      rootNode = patch(rootNode, patches)
     }
-  }
-}
+  })
+})()
 
-renderer.onmessage = (ev) => {
-  console.log('onmessage:', ev.data)
-  var message = messages.load(ev.data)
-  if (message instanceof messages.Patch) {
-    loadFns(message.patches)
-    rootNode = patch(rootNode, message.patches)
-  }
-}
-renderer.postMessage(new messages.Init(state))
+let state = new Promise((resolve) => {
+  let state = new Worker('state.js')
+  state.onerror = (err) => console.log('state error:', err)
+  w.connect(state, () => resolve(state))
+})
+
+let renderer = new Promise((resolve) => {
+  let renderer = new Worker('renderer.js')
+  renderer.onerror = (err) => console.log('renderer error:', err)
+  w.connect(renderer, () => resolve(renderer))
+})
+
+Promise.all([state, renderer]).then(() =>
+  p.publish({
+    topic: 'state.init',
+    data: { count: 0 }
+  }))

@@ -4,25 +4,27 @@
   "description": "",
   "main": "server/main.js",
   "scripts": {
-    "browserify:main": "browserify --debug -t babelify -o client/main.js src/client/main.es6",
-    "browserify:renderer": "browserify --debug -t babelify -o client/renderer.js src/client/renderer.es6",
-    "browserify": "npm run browserify:main && npm run browserify:renderer",
-    "watchify:main": "watchify --debug -t babelify -o client/main.js src/client/main.es6",
-    "watchify:renderer": "watchify --debug -t babelify -o client/renderer.js src/client/renderer.es6",
-    "watchify": "npm run watchify:main && npm run watchify:renderer",
+    "webpack": "webpack",
     "cp": "mkdir -p client && cp static/* client",
-    "build": "npm run cp && npm run browserify",
+    "build": "npm run cp && npm run webpack",
     "start": "node server/main.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "babelify": "^6.0.2",
-    "browserify": "^9.0.3"
+    "babel-core": "^6.2.1",
+    "babel-loader": "^6.2.0",
+    "babel-plugin-transform-runtime": "^6.1.18",
+    "babel-preset-es2015": "^6.1.18",
+    "webpack": "^1.12.9"
   },
   "dependencies": {
     "babel": "^5.1.13",
-    "knockout": "^3.3.0",
+    "lodash": "^3.10.1",
+    "postal": "^1.0.7",
+    "postal.diagnostics": "^0.7.4",
+    "postal.federation": "^0.4.0",
+    "postal.xframe": "^0.4.0",
     "socket.io": "^1.3.5",
     "virtual-dom": "^2.0.1"
   }

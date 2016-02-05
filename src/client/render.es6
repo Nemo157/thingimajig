@@ -1,9 +1,5 @@
 import h from 'virtual-dom/h'
 
-function blah () {
-  console.log('blah')
-}
-
 export default function render (state) {
   return h('div', {
     style: {
@@ -13,6 +9,5 @@ export default function render (state) {
       width: (100 + state.count) + 'px',
       height: (100 + state.count) + 'px'
     },
-    onclick: blah
   }, [String(state.count)])
 }

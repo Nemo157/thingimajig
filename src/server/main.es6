@@ -11,9 +11,10 @@ var contentTypes = {
   '.html': 'text/html'
 }
 
+let port = 9231
 var server = http.createServer()
 
-server.on('listening', () => console.log('Server listening'))
+server.on('listening', () => console.log('Server listening on', port))
   .on('close', () => console.log('Shutting down'))
   .on('error', (err) => console.log('Server error:', err))
   .on('clientError', (err) => console.log('Client error:', err))
@@ -85,4 +86,4 @@ setInterval(() => {
   console.log('Incremented to', count())
 }, 10000)
 
-server.listen(9231)
+server.listen(port)
